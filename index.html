@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación: Estructura de la Llamada BCP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-6">
+
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold text-blue-800 mb-2 text-center">Evaluación: Estructura de la Llamada BCP</h1>
+        <p class="text-gray-600 mb-8 text-center">Examen de evaluación de conocimientos sobre el protocolo, argumentación y gestión de cobranza.</p>
+
+        <form id="quizForm" class="space-y-6">
+            
+            <!-- Nombre del participante -->
+            <div class="bg-blue-50 p-4 rounded-md border border-blue-200">
+                <label for="studentName" class="block text-lg font-semibold text-blue-900 mb-2">Nombre y Apellido del Asesor:</label>
+                <input type="text" id="studentName" class="w-full p-2 border border-gray-300 rounded focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Ingresa tu nombre completo" required>
+            </div>
+
+            <!-- Preguntas -->
+            <div id="questionsContainer" class="space-y-8">
+                <!-- Las preguntas se inyectan por JS para mantener el código limpio -->
+            </div>
+
+            <button type="button" onclick="calcularNota()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded text-lg transition duration-200">
+                Finalizar Examen y Ver Nota
+            </button>
+        </form>
+
+        <!-- Resultados -->
+        <div id="resultadoContainer" class="hidden mt-8 p-6 rounded-lg text-center shadow-inner">
+            <h2 class="text-2xl font-bold mb-2" id="resultadoNombre"></h2>
+            <p class="text-xl mb-4">Tu nota final es:</p>
+            <div class="text-5xl font-black mb-4" id="resultadoNota"></div>
+            <p id="resultadoMensaje" class="font-medium text-lg"></p>
+            <button onclick="location.reload()" class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Volver a intentar</button>
+        </div>
+    </div>
+
+    <script>
+        const preguntas = [
+            { id: 'q1', num: 1, texto: 'En el Paso 1 (Apertura y Validación), ¿qué información es obligatorio validar si te comunicas con una empresa?', opciones: { A: 'El RUC y la dirección fiscal.', B: 'El número de cuenta y el saldo.', C: 'La empresa y el nombre del Representante Legal o Gerente.', D: 'El cargo del empleado que contesta la llamada.' }, correcta: 'C' },
+            { id: 'q2', num: 2, texto: 'Durante la presentación inicial (Paso 1), ¿cuál es la frase obligatoria que debes mencionar?', opciones: { A: '"Le llamo de cobranzas del BCP".', B: '"Llamamos de Martec por encargo del BCP".', C: '"Soy su asesor financiero personal".', D: '"Me comunico del área legal del banco".' }, correcta: 'B' },
+            { id: 'q3', num: 3, texto: 'En el Paso 2 (Motivo de la Llamada), ¿cuáles son los 3 puntos EXACTOS que se deben mencionar sin excepción?', opciones: { A: 'Producto, Deuda Total y Mora.', B: 'Capital, Intereses y Penalidades.', C: 'Tarjeta, Último pago y Promociones.', D: 'Fecha de vencimiento, Producto y Agencia asignada.' }, correcta: 'A' },
+            { id: 'q4', num: 4, texto: '¿Cuáles son los tres elementos que componen el "Triángulo de Diagnóstico" en el Paso 3 (Sondeo)?', opciones: { A: 'Sueldo, Gastos y Deudas.', B: 'Situación, Motivo y Recursos.', C: 'Empleo, Familia y Salud.', D: 'Disposición, Capacidad y Garantía.' }, correcta: 'B' },
+            { id: 'q5', num: 5, texto: 'Al ofrecer la Alternativa 1 (Monto Intermedio) en el Paso 4, ¿en qué se debe hacer énfasis?', opciones: { A: 'En que es la única opción disponible.', B: 'En las consecuencias legales si no acepta.', C: 'En el porcentaje de descuento y el gran ahorro del cliente.', D: 'En los intereses moratorios acumulados.' }, correcta: 'C' },
+            { id: 'q6', num: 6, texto: '¿Qué táctica se debe usar al ofrecer la Alternativa 2 (Monto Más Bajo)?', opciones: { A: 'Táctica de intimidación.', B: 'Táctica de escalamiento (hablar con supervisor o activar descuento especial).', C: 'Táctica de empatía profunda.', D: 'Táctica de ultimátum de 24 horas.' }, correcta: 'B' },
+            { id: 'q7', num: 7, texto: 'Según la Matriz de Fraccionamiento, para una deuda mayor a 5000 soles, ¿cuál es la cuota inicial y el máximo de cuotas permitidas?', opciones: { A: 'Inicial 50%, máximo 3 cuotas.', B: 'Sin inicial, máximo 6 cuotas.', C: 'Inicial 10% o 15%, máximo 2 cuotas.', D: 'Inicial 30%, máximo 4 cuotas.' }, correcta: 'C' },
+            { id: 'q8', num: 8, texto: 'Si un cliente tiene una deuda menor a 5000 soles y pide fraccionamiento, ¿cuál es la regla a aplicar?', opciones: { A: 'Inicial 10% y máximo 2 cuotas.', B: 'Inicial 50% y máximo 2 cuotas.', C: 'Sin inicial y 3 cuotas.', D: 'No se permite fraccionamiento.' }, correcta: 'B' },
+            { id: 'q9', num: 9, texto: 'Para deudas menores a 1000 soles, ¿cómo funciona el fraccionamiento?', opciones: { A: 'Inicial 50% y 2 cuotas el mes siguiente.', B: 'Sin inicial y 2 cuotas en el mismo mes exacto.', C: 'Inicial 10% y 3 cuotas.', D: 'Deben pagarse en una sola cuota obligatoriamente.' }, correcta: 'B' },
+            { id: 'q10', num: 10, texto: 'En el caso de la "Excepción MAX 1", ¿cuál es la regla estricta si el sistema muestra que el cliente debe pagar 800 soles?', opciones: { A: 'Cobrar los 800 soles.', B: 'El asesor DEBE SUBIR el monto a 1,000 soles.', C: 'Bajar el monto a 500 soles.', D: 'Escalarlo al gerente de agencia.' }, correcta: 'B' },
+            { id: 'q11', num: 11, texto: 'En el caso de la "Excepción MAX 2", ¿cuál es el monto mínimo de pago establecido como regla estricta?', opciones: { A: '1,000 soles.', B: '5,000 soles.', C: '7,000 soles.', D: '10,000 soles.' }, correcta: 'C' },
+            { id: 'q12', num: 12, texto: 'En el Paso 5 (Manejo de Objeciones), ¿cómo se utiliza la "Balanza de Decisión"?', opciones: { A: 'Comparando la deuda actual con deudas de otros bancos.', B: 'Ofreciendo más descuentos hasta que el cliente acepte.', C: 'Contrarrestando cada objeción inclinando la balanza hacia los beneficios.', D: 'Evaluando si el cliente dice la verdad o miente.' }, correcta: 'C' },
+            { id: 'q13', num: 13, texto: 'En la logística de pago, ¿dónde se pueden realizar pagos con AMEX y Créditos?', opciones: { A: 'En cualquier agente BCP.', B: 'En la Banca Móvil de cualquier banco.', C: 'SOLO de forma presencial en agencias.', D: 'A través de Yape.' }, correcta: 'C' },
+            { id: 'q14', num: 14, texto: '¿Cuál es la "Regla táctica" respecto al horario que se le debe indicar al cliente para pagos en agencia?', opciones: { A: 'Que vaya máximo a las 6:00 PM.', B: 'Que vaya máximo a las 5:30 PM para asegurar la transacción en el sistema.', C: 'Que vaya temprano por la mañana.', D: 'Que puede ir hasta las 7:00 PM.' }, correcta: 'B' },
+            { id: 'q15', num: 15, texto: 'Sobre la "Carta de No Adeudo", ¿qué información es correcta?', opciones: { A: 'Tiene un costo de 20 soles y se entrega en 24 horas.', B: 'Se entrega en un plazo de 7 a 14 días, es GRATIS y el cliente debe llamar al 3119898.', C: 'Se descarga automáticamente de la app del banco.', D: 'Solo se entrega presencialmente después de 30 días.' }, correcta: 'B' },
+            { id: 'q16', num: 16, texto: '¿En qué consiste la Técnica de "Doble Alternativa" en el Cierre?', opciones: { A: 'Dar dos opciones cerradas para que el cliente elija (fecha o canal), evitando preguntas abiertas.', B: 'Ofrecer dos descuentos diferentes al mismo tiempo.', C: 'Preguntar al cliente qué día y a qué hora quiere pagar.', D: 'Dejar que el cliente decida si paga este mes o el siguiente.' }, correcta: 'A' },
+            { id: 'q17', num: 17, texto: 'En el Paso 7, ¿qué se debe hacer ante una respuesta afirmativa del cliente para el pago?', opciones: { A: 'Cortar la llamada y enviar un SMS.', B: 'Iniciar la grabación obligatoria del acuerdo formal.', C: 'Transferir la llamada al banco.', D: 'Celebrar con el cliente.' }, correcta: 'B' },
+            { id: 'q18', num: 18, texto: 'Una vez finalizada la llamada y el acuerdo, ¿qué se le debe exigir al cliente como comprobante?', opciones: { A: 'Que envíe un correo electrónico formal al banco.', B: 'Que guarde el voucher físico por 5 años.', C: 'Que envíe la foto del comprobante (voucher) vía WhatsApp.', D: 'Que llame nuevamente para confirmar el depósito.' }, correcta: 'C' },
+            { id: 'q19', num: 19, texto: 'Según el Playbook de gestión, ¿qué significa "Mantener el control de la llamada"?', opciones: { A: 'Hablar más fuerte que el cliente para que escuche.', B: 'Ser el experto guiando al cliente y usar el sondeo para obtener información, no solo quejas.', C: 'No dejar hablar al cliente en ningún momento.', D: 'Cortar la llamada si el cliente se molesta.' }, correcta: 'B' },
+            { id: 'q20', num: 20, texto: '¿Qué indica el manual sobre "Escalar con estrategia"?', opciones: { A: 'Ir de frente a la opción más barata para cerrar rápido.', B: 'No agotar la Alternativa 4 en el primer minuto, respetando la caída escalonada de montos.', C: 'Hablar siempre con el supervisor antes de iniciar la llamada.', D: 'Solo ofrecer descuentos a clientes antiguos.' }, correcta: 'B' }
+        ];
+
+        const container = document.getElementById('questionsContainer');
+
+        // Generar HTML de preguntas dinámicamente
+        preguntas.forEach((p) => {
+            let htmlOpciones = '';
+            for (const [letra, texto] of Object.entries(p.opciones)) {
+                htmlOpciones += `
+                    <label class="block p-3 rounded bg-white border border-gray-200 hover:bg-blue-50 cursor-pointer transition">
+                        <input type="radio" name="${p.id}" value="${letra}" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500">
+                        <span class="font-bold mr-1">${letra})</span> ${texto}
+                    </label>
+                `;
+            }
+
+            const preguntaHTML = `
+                <div class="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">${p.num}. ${p.texto}</h3>
+                    <div class="space-y-2 pl-2">
+                        ${htmlOpciones}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += preguntaHTML;
+        });
+
+        function calcularNota() {
+            const nombre = document.getElementById('studentName').value.trim();
+            if (!nombre) {
+                alert('Por favor, ingresa tu nombre completo antes de enviar el examen.');
+                document.getElementById('studentName').focus();
+                return;
+            }
+
+            let puntaje = 0;
+            let respondidas = 0;
+
+            preguntas.forEach((p) => {
+                const seleccion = document.querySelector(`input[name="${p.id}"]:checked`);
+                if (seleccion) {
+                    respondidas++;
+                    if (seleccion.value === p.correcta) {
+                        puntaje++; // Cada pregunta vale 1 punto (Total 20)
+                    }
+                }
+            });
+
+            if (respondidas < 20) {
+                alert(`Has respondido ${respondidas} de 20 preguntas. Por favor, completa todas antes de enviar.`);
+                return;
+            }
+
+            // Ocultar formulario y mostrar resultado
+            document.getElementById('quizForm').classList.add('hidden');
+            const resContainer = document.getElementById('resultadoContainer');
+            resContainer.classList.remove('hidden');
+
+            document.getElementById('resultadoNombre').innerText = `Asesor: ${nombre}`;
+            document.getElementById('resultadoNota').innerText = `${puntaje} / 20`;
+
+            const mensajeEl = document.getElementById('resultadoMensaje');
+            resContainer.classList.remove('bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+
+            if (puntaje >= 18) {
+                resContainer.classList.add('bg-green-100', 'text-green-800');
+                mensajeEl.innerText = "¡Excelente trabajo! Dominas el protocolo a la perfección.";
+            } else if (puntaje >= 14) {
+                resContainer.classList.add('bg-yellow-100', 'text-yellow-800');
+                mensajeEl.innerText = "Buen intento, pero hay detalles del protocolo que debes repasar.";
+            } else {
+                resContainer.classList.add('bg-red-100', 'text-red-800');
+                mensajeEl.innerText = "Necesitas estudiar urgente el Playbook. ¡Vuelve a intentarlo!";
+            }
+            
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
